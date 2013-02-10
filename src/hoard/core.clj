@@ -25,12 +25,15 @@
 (defn get-all-entities [col] 
   (m/fetch col))
 
+(defn delete-entity! [col id]
+  (m/destroy! col {:_id (m/object-id id)}))
+
 ;; request handling
 (defn parse-request-body [entity]
   (parse-stream (java.io.BufferedReader. (java.io.InputStreamReader. entity "UTF-8"))))
 
 (defn add-resource-index-headers [response]
-  (merge {"allow" "GET, POST, DELETE"} response))
+  (merge {"accept" "application/json" "allow" "GET, POST, DELETE"} response))
 
 (defn generate-resource-index-entry [resource collection-name]
   {:links [{:href (str "http://localhost:3000/" collection-name "/" (:_id resource))}]}) 
@@ -65,11 +68,16 @@
 (defn head-resource-index [] 
   {:headers (add-resource-index-headers {}) :status 200})
 
+(defn delete-subordinate-resource [collection-name id]
+  (delete-entity! collection-name id)
+  {:status 200})
+
 ;;Routing
 (defroutes app-routes 
   (HEAD "/:collection" [collection] (head-resource-index))
   (GET "/:collection" {{collection :collection} :params query :query-params} (get-resource-index collection query))
   (DELETE "/:collection" [collection] (delete-resource-index collection))
   (POST "/:collection" {{collection :collection} :params body :body} (create-resource collection body))
-  (GET "/:collection/:id" [collection id] (get-subordinate-resource collection id)))
+  (GET "/:collection/:id" [collection id] (get-subordinate-resource collection id))
+  (DELETE "/:collection/:id" [collection id] (delete-subordinate-resource collection id)))
 (def app (handler/api app-routes))

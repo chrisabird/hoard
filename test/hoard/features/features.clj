@@ -7,6 +7,7 @@
 (with-server
   (fact "heading the resource index should tell the client about the resource" 
     (let [headers (:headers (client-heads-resource-index uri))]
+      (get headers "accept") => "application/json"
       (get headers "allow") => "GET, POST, DELETE"))
   
   (fact "posting an entity to the resource index should create a subordinate resource and tell the client where its located"
@@ -43,7 +44,16 @@
       (:status response) => 303
       (get (:headers response) "location") => #"http://localhost:3000/tests/[A-Za-z0-9]{24}"))
 
-  `(fact "putting to an existing subordinate resource should update the entity")
+  (fact "putting to an existing subordinate resource should update the entity"
+    (client-deletes-resource uri)
+      (let [subordinate-uri (get (:headers (client-creates-resource uri entity)) "location")]
+        (client-deletes-resource subordinate-uri)
+        (:status (client-gets-subordinate-resource subordinate-uri)) => 404))
+
   `(fact "deleting an existing subordinate resource should remove it")
   `(fact "putting to a subordinate resource that does not exist should tell the client the subordinate resrouce does not exist")
-  `(fact "putting to the resource index should tell the client the method is now allowed"))
+  `(fact "posting to a subordinate resource that does not exist should tell the client the subordinate resrouce does not exist")
+  `(fact "putting to the resource index should tell the client the method is now allowed")
+  `(fact "posting to a subordinate resource should tell the client the method is now allowed")
+  
+  )

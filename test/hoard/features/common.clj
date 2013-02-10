@@ -16,13 +16,13 @@
    (client/get uri {:as :json}))
 
 (defn client-deletes-resource [uri]
-  (client/delete uri))
+  (client/delete uri {:throw-exceptions false}))
 
 (defn client-queries-resource-index-with-id [uri id]
   (client/get (str uri "?id=" id) {:follow-redirects false}))
 
 (defn client-gets-subordinate-resource [uri]
-  (client/get uri {:as :json}))
+  (client/get uri {:as :json :throw-exceptions false}))
 
 (defn client-heads-resource-index [uri]
   (client/head uri))
