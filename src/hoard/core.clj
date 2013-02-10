@@ -28,12 +28,15 @@
 (defn delete-entity! [col id]
   (m/destroy! col {:_id (m/object-id id)}))
 
-;; request handling
+;; resource index handlers
 (defn parse-request-body [entity]
   (parse-stream (java.io.BufferedReader. (java.io.InputStreamReader. entity "UTF-8"))))
 
 (defn add-resource-index-headers [response]
   (merge {"accept" "application/json" "allow" "GET, POST, DELETE"} response))
+
+(defn add-subordinate-resource-headers [response]
+  (merge {"accept" "application/json" "allow" "GET, PUT, DELETE"} response))
 
 (defn generate-resource-index-entry [resource collection-name]
   {:links [{:href (str "http://localhost:3000/" collection-name "/" (:_id resource))}]}) 
@@ -60,17 +63,22 @@
   {:headers (add-resource-index-headers {}) 
    :status 200})
 
-(defn get-subordinate-resource [collection-name id]
-  (if-let [entity (get-entity collection-name id)]
-    {:status 200 :body (generate-string entity)}
-    {:status 404}))
-
 (defn head-resource-index [] 
   {:headers (add-resource-index-headers {}) :status 200})
 
+
+;; subordinate resource handlers
+(defn get-subordinate-resource [collection-name id]
+  (if-let [entity (get-entity collection-name id)]
+    {:headers (add-subordinate-resource-headers {}) :status 200 :body (generate-string entity)}
+    {:headers (add-subordinate-resource-headers {}) :status 404}))
+
 (defn delete-subordinate-resource [collection-name id]
   (delete-entity! collection-name id)
-  {:status 200})
+  {:headers (add-subordinate-resource-headers {}) :status 200})
+
+(defn head-subordinate-resource [] 
+  {:headers (add-subordinate-resource-headers {}) :status 200})
 
 ;;Routing
 (defroutes app-routes 
@@ -78,6 +86,7 @@
   (GET "/:collection" {{collection :collection} :params query :query-params} (get-resource-index collection query))
   (DELETE "/:collection" [collection] (delete-resource-index collection))
   (POST "/:collection" {{collection :collection} :params body :body} (create-resource collection body))
+  (HEAD "/:collection/:id" [collection id] (head-subordinate-resource))
   (GET "/:collection/:id" [collection id] (get-subordinate-resource collection id))
   (DELETE "/:collection/:id" [collection id] (delete-subordinate-resource collection id)))
 (def app (handler/api app-routes))
