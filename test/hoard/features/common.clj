@@ -10,7 +10,7 @@
 (def apiBaseUrl "http://localhost:3000")
 
 (defn client-creates-resource [uri entity] 
-  (client/post uri {:body (generate-string entity)}))
+  (client/post uri {:body (generate-string entity) :throw-exceptions false}))
 
 (defn client-lists-resource-index [uri]
    (client/get uri {:as :json}))
@@ -26,3 +26,6 @@
 
 (defn client-heads-resource-index [uri]
   (client/head uri))
+
+(defn client-puts-to-resource [uri entity]
+  (client/put uri {:body (generate-string entity) :throw-exceptions false}))

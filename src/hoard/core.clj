@@ -66,6 +66,8 @@
 (defn head-resource-index [] 
   {:headers (add-resource-index-headers {}) :status 200})
 
+(defn put-resource-index [] 
+  {:headers (add-resource-index-headers {}) :status 405})
 
 ;; subordinate resource handlers
 (defn get-subordinate-resource [collection-name id]
@@ -80,13 +82,19 @@
 (defn head-subordinate-resource [] 
   {:headers (add-subordinate-resource-headers {}) :status 200})
 
+(defn post-subordinate-resource [] 
+  {:headers (add-resource-index-headers {}) :status 405})
+
+
 ;;Routing
 (defroutes app-routes 
-  (HEAD "/:collection" [collection] (head-resource-index))
+  (HEAD "/:collection" [] (head-resource-index))
   (GET "/:collection" {{collection :collection} :params query :query-params} (get-resource-index collection query))
-  (DELETE "/:collection" [collection] (delete-resource-index collection))
+  (PUT "/:collection" [] (put-resource-index))
   (POST "/:collection" {{collection :collection} :params body :body} (create-resource collection body))
-  (HEAD "/:collection/:id" [collection id] (head-subordinate-resource))
+  (DELETE "/:collection" [collection] (delete-resource-index collection))
+  (HEAD "/:collection/:id" [] (head-subordinate-resource))
   (GET "/:collection/:id" [collection id] (get-subordinate-resource collection id))
+  (POST "/:collection/:id" [] (post-subordinate-resource))
   (DELETE "/:collection/:id" [collection id] (delete-subordinate-resource collection id)))
 (def app (handler/api app-routes))

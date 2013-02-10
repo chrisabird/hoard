@@ -61,7 +61,11 @@
   `(fact "putting to an existing subordinate resource should update the entity")
   `(fact "putting to a subordinate resource that does not exist should tell the client the subordinate resrouce does not exist")
   `(fact "posting to a subordinate resource that does not exist should tell the client the subordinate resrouce does not exist")
-  `(fact "putting to the resource index should tell the client the method is now allowed")
-  `(fact "posting to a subordinate resource should tell the client the method is now allowed")
-  
-  )
+
+  (fact "putting to the resource index should tell the client the method is now allowed"
+    (let [response (client-puts-to-resource uri entity)]
+      (:status response) => 405))
+
+  (fact "posting to a subordinate resource should tell the client the method is now allowed"
+    (let [response (client-creates-resource (str uri "/f8q9nqhncufihqqmfc8hq3c") entity)]
+      (:status response) => 405)))
