@@ -58,9 +58,15 @@
       (get headers "accept") => "application/json"
       (get headers "allow") => "GET, PUT, DELETE"))
 
-  `(fact "putting to an existing subordinate resource should update the entity")
+  (fact "putting to an existing subordinate resource should update the entity"
+    (client-deletes-resource uri)
+    (let [subordinate-uri (get (:headers (client-creates-resource uri entity)) "location")
+          put-resposne (client-puts-to-resource subordinate-uri updated-entity)
+          subordinate-body (:body (client-gets-subordinate-resource subordinate-uri))]
+      (:status put-resposne) => 204
+      subordinate-body => (contains updated-entity)))
+
   `(fact "putting to a subordinate resource that does not exist should tell the client the subordinate resrouce does not exist")
-  `(fact "posting to a subordinate resource that does not exist should tell the client the subordinate resrouce does not exist")
 
   (fact "putting to the resource index should tell the client the method is now allowed"
     (let [response (client-puts-to-resource uri entity)]

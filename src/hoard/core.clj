@@ -28,6 +28,9 @@
 (defn delete-entity! [col id]
   (m/destroy! col {:_id (m/object-id id)}))
 
+(defn update-entity! [col id entity] 
+  (m/update! col {:_id (m/object-id id)} entity))
+
 ;; resource index handlers
 (defn parse-request-body [entity]
   (parse-stream (java.io.BufferedReader. (java.io.InputStreamReader. entity "UTF-8"))))
@@ -83,8 +86,11 @@
   {:headers (add-subordinate-resource-headers {}) :status 200})
 
 (defn post-subordinate-resource [] 
-  {:headers (add-resource-index-headers {}) :status 405})
+  {:headers (add-subordinate-resource-headers {}) :status 405})
 
+(defn put-subordinate-resource [collection-name id entity]
+  (update-entity! collection-name id (parse-request-body entity))
+  {:headers (add-subordinate-resource-headers {}) :status 204})
 
 ;;Routing
 (defroutes app-routes 
@@ -95,6 +101,7 @@
   (DELETE "/:collection" [collection] (delete-resource-index collection))
   (HEAD "/:collection/:id" [] (head-subordinate-resource))
   (GET "/:collection/:id" [collection id] (get-subordinate-resource collection id))
+  (PUT "/:collection/:id" {{collection :collection id :id} :params body :body} (put-subordinate-resource collection id body))
   (POST "/:collection/:id" [] (post-subordinate-resource))
   (DELETE "/:collection/:id" [collection id] (delete-subordinate-resource collection id)))
 (def app (handler/api app-routes))
