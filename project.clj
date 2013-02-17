@@ -1,8 +1,8 @@
 (defproject hoard "0.1.0-SNAPSHOT"
   :description "Generic RESTful Resource over document or key value stores"
   :url "http://github.com/chrisabird/hoard"
-  :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :license {:name "MIT License"
+            :url "http://mit-license.org/"}
   :dependencies [
     [org.clojure/tools.cli "0.2.2"]
     [ring/ring-jetty-adapter "1.1.1"]
